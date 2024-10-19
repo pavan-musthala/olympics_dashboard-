@@ -122,21 +122,28 @@ def country_event_heatmap(df, country):
 
 def most_succesful_countrywise(df, country):
     # Check if necessary columns exist
-    if 'Medal' not in df.columns or 'region' not in df.columns:
-        raise ValueError("DataFrame must contain 'Medal' and 'region' columns.")
+    if 'Medal' not in df.columns or 'region' not in df.columns or 'Name' not in df.columns:
+        raise ValueError("DataFrame must contain 'Medal', 'region', and 'Name' columns.")
 
+    # Filter the DataFrame for the specified country and drop rows with NaN medals
     temp_df = df.dropna(subset=['Medal'])
     temp_df = temp_df[temp_df['region'] == country]
-    
-    # Get the top 10 countries by medal count
-    medal_counts = temp_df['Name'].value_counts().reset_index().head(10)
+
+    # Check if there are any records after filtering
+    if temp_df.empty:
+        raise ValueError(f"No data available for the specified country: {country}")
+
+    # Get the top 15 countries by medal count
+    medal_counts = temp_df['Name'].value_counts().reset_index()
     medal_counts.columns = ['Name', 'Medals']  # Rename columns for clarity
 
-    # Merge to get additional information
-    x = medal_counts.merge(df[['Name', 'Sport', 'region']], on='Name', how='left').drop_duplicates('Name')
-    
-    return x[['Name', 'Medals', 'Sport', 'region']]
+    # Perform merge to get additional information
+    merged_df = medal_counts.merge(df[['Name', 'Sport', 'region']], on='Name', how='left')
 
+    # Drop duplicates and keep the relevant columns
+    x = merged_df[['Name', 'Medals', 'Sport', 'region']].drop_duplicates(subset='Name')
+
+    return x
 
 def weight_v_height(df, sport):
     # Check if necessary columns exist
