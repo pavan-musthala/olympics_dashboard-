@@ -133,17 +133,21 @@ def most_succesful_countrywise(df, country):
     if temp_df.empty:
         raise ValueError(f"No data available for the specified country: {country}")
 
-    # Get the top 15 countries by medal count
+    # Get the top 15 athletes by medal count
     medal_counts = temp_df['Name'].value_counts().reset_index()
     medal_counts.columns = ['Name', 'Medals']  # Rename columns for clarity
 
-    # Perform merge to get additional information
+    # Perform merge to get additional information (check if 'Name' exists in both DataFrames)
+    if 'Name' not in df.columns:
+        raise KeyError("'Name' column not found in the original DataFrame.")
+    
     merged_df = medal_counts.merge(df[['Name', 'Sport', 'region']], on='Name', how='left')
 
     # Drop duplicates and keep the relevant columns
-    x = merged_df[['Name', 'Medals', 'Sport', 'region']].drop_duplicates(subset='Name')
+    result_df = merged_df[['Name', 'Medals', 'Sport', 'region']].drop_duplicates(subset='Name')
 
-    return x
+    return result_df
+
 
 def weight_v_height(df, sport):
     # Check if necessary columns exist
