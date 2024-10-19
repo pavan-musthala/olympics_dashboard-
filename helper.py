@@ -56,41 +56,41 @@ def data_overtime(df, col):
     print("First few rows of DataFrame:")
     print(df.head())  # Print the first few rows of the DataFrame
 
-    # Dropping duplicates and calculating value counts
     # Check if 'Year' column exists
     if 'Year' not in df.columns:
         raise ValueError("Column 'Year' does not exist in the DataFrame.")
     
-    # Creating a DataFrame with unique Year and specified column
+    # Create a DataFrame with unique Year and specified column
     nations_overtime = df.drop_duplicates(['Year', col])
     
     # Ensure there are rows to work with
     if nations_overtime.empty:
         raise ValueError("No data available after dropping duplicates.")
-
+    
     # Value counts for the specified column
     value_counts = nations_overtime['Year'].value_counts().reset_index()
     
     # Check the structure before renaming
     print("Value counts before renaming:", value_counts.head())
-
+    
     # Rename columns appropriately
-    value_counts.rename(columns={'index': 'Edition', 'Year': col}, inplace=True)
-
+    value_counts.columns = ['Edition', col]  # Assign names directly to avoid KeyErrors
+    
     # Check the structure after renaming
     print("Value counts after renaming:", value_counts.head())
 
     # Print the columns of value_counts for debugging
     print("Columns in value_counts:", value_counts.columns.tolist())
-
+    
     # Ensure 'Edition' column exists before sorting
     if 'Edition' not in value_counts.columns:
         raise ValueError("Column 'Edition' does not exist after renaming.")
-
+    
     # Sort by 'Edition'
     value_counts.sort_values('Edition', ascending=True, inplace=True)
     
     return value_counts
+
 
 
 
