@@ -121,32 +121,54 @@ def country_event_heatmap(df, country):
     return pt
 
 def most_succesful_countrywise(df, country):
-    temp_df = df.dropna(subset = ['Medal'])
-    
+    # Check if necessary columns exist
+    if 'Medal' not in df.columns or 'region' not in df.columns:
+        raise ValueError("DataFrame must contain 'Medal' and 'region' columns.")
+
+    temp_df = df.dropna(subset=['Medal'])
     temp_df = temp_df[temp_df['region'] == country]
     
-    x = temp_df['Name'].value_counts().reset_index().head(10).merge(df,left_on = 'index', right_on = 'Name', how='left')[['index', 'Name_x', 'Sport', 'region']].drop_duplicates('index')
-    x.rename(columns = {'index':'Name', 'Name_x':"Medals"}, inplace = True)
-    return x
+    # Get the top 10 countries by medal count
+    medal_counts = temp_df['Name'].value_counts().reset_index().head(10)
+    medal_counts.columns = ['Name', 'Medals']  # Rename columns for clarity
+
+    # Merge to get additional information
+    x = medal_counts.merge(df[['Name', 'Sport', 'region']], on='Name', how='left').drop_duplicates('Name')
+    
+    return x[['Name', 'Medals', 'Sport', 'region']]
+
 
 def weight_v_height(df, sport):
-    athlete_df = df.drop_duplicates(subset= ['Name', 'region'])
-    athlete_df['Medal'].fillna('No Medal', inplace = True)
+    # Check if necessary columns exist
+    if 'Name' not in df.columns or 'region' not in df.columns or 'Sport' not in df.columns:
+        raise ValueError("DataFrame must contain 'Name', 'region', and 'Sport' columns.")
+
+    athlete_df = df.drop_duplicates(subset=['Name', 'region'])
+    athlete_df['Medal'].fillna('No Medal', inplace=True)
+
     if sport != 'Overall':
-         temp_df = athlete_df[athlete_df['Sport']== sport]
-         return temp_df
+        temp_df = athlete_df[athlete_df['Sport'] == sport]
+        if temp_df.empty:
+            raise ValueError(f"No data available for sport: {sport}")
+        return temp_df
     else:
         return athlete_df
+
     
 def men_vs_women(df):
-    athlete_df = df.drop_duplicates(subset= ['Name', 'region'])
+    # Check if necessary columns exist
+    if 'Name' not in df.columns or 'Sex' not in df.columns or 'Year' not in df.columns:
+        raise ValueError("DataFrame must contain 'Name', 'Sex', and 'Year' columns.")
 
-    men = athlete_df[athlete_df['Sex']=='M'].groupby('Year').count()['Name'].reset_index()
-    women = athlete_df[athlete_df['Sex']=='F'].groupby('Year').count()['Name'].reset_index()
+    athlete_df = df.drop_duplicates(subset=['Name', 'region'])
 
-    final = men.merge(women, on= 'Year', how= 'left')
-    final.rename(columns = {'Name_x': 'Male', 'Name_y': 'Female'}, inplace = True)
+    men = athlete_df[athlete_df['Sex'] == 'M'].groupby('Year').count()['Name'].reset_index()
+    women = athlete_df[athlete_df['Sex'] == 'F'].groupby('Year').count()['Name'].reset_index()
 
-    final.fillna(0, inplace = True)
+    final = men.merge(women, on='Year', how='left', suffixes=('_Male', '_Female'))
+    final.rename(columns={'Name_Male': 'Male', 'Name_Female': 'Female'}, inplace=True)
+
+    final.fillna(0, inplace=True)
 
     return final
+
