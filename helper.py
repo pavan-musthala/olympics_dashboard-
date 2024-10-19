@@ -44,23 +44,23 @@ def fetch_medal_tally(df,year, country):
     return x
 
 def data_overtime(df, col):
-    # Check if the specified column exists
+    
     if col not in df.columns:
         raise ValueError(f"Column '{col}' does not exist in the DataFrame.")
     
-    # Ensure columns are stripped of whitespace
+    
     df.columns = df.columns.str.strip()
 
-    # Print the DataFrame structure for debugging
     print("Columns in DataFrame:", df.columns)
     
-    # Check for the relevant columns before proceeding
+    
     print(df[['Year', col]].head())
 
-    # Dropping duplicates and calculating value counts
     nations_overtime = df.drop_duplicates(['Year', col])['Year'].value_counts().reset_index()
     nations_overtime.rename(columns={'index': 'Edition', 'Year': col}, inplace=True)
-    nations_overtime.sort_values('Edition', ascending=True, inplace=True)  # Sort by Edition
+    print("Nations Overtime DataFrame:", nations_overtime.head())  
+    
+    nations_overtime.sort_values('Edition', ascending=True, inplace=True) 
     return nations_overtime
 
 
