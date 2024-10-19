@@ -44,24 +44,53 @@ def fetch_medal_tally(df,year, country):
     return x
 
 def data_overtime(df, col):
-    
+    # Check if the specified column exists
     if col not in df.columns:
         raise ValueError(f"Column '{col}' does not exist in the DataFrame.")
     
-    
+    # Ensure columns are stripped of whitespace
     df.columns = df.columns.str.strip()
 
-    print("Columns in DataFrame:", df.columns)
-    
-    
-    print(df[['Year', col]].head())
+    # Print the DataFrame structure for debugging
+    print("Columns in DataFrame:", df.columns.tolist())
+    print("First few rows of DataFrame:")
+    print(df.head())  # Print the first few rows of the DataFrame
 
-    nations_overtime = df.drop_duplicates(['Year', col])['Year'].value_counts().reset_index()
-    nations_overtime.rename(columns={'index': 'Edition', 'Year': col}, inplace=True)
-    print("Nations Overtime DataFrame:", nations_overtime.head())  
+    # Dropping duplicates and calculating value counts
+    # Check if 'Year' column exists
+    if 'Year' not in df.columns:
+        raise ValueError("Column 'Year' does not exist in the DataFrame.")
     
-    nations_overtime.sort_values('Edition', ascending=True, inplace=True) 
-    return nations_overtime
+    # Creating a DataFrame with unique Year and specified column
+    nations_overtime = df.drop_duplicates(['Year', col])
+    
+    # Ensure there are rows to work with
+    if nations_overtime.empty:
+        raise ValueError("No data available after dropping duplicates.")
+
+    # Value counts for the specified column
+    value_counts = nations_overtime['Year'].value_counts().reset_index()
+    
+    # Check the structure before renaming
+    print("Value counts before renaming:", value_counts.head())
+
+    # Rename columns appropriately
+    value_counts.rename(columns={'index': 'Edition', 'Year': col}, inplace=True)
+
+    # Check the structure after renaming
+    print("Value counts after renaming:", value_counts.head())
+
+    # Print the columns of value_counts for debugging
+    print("Columns in value_counts:", value_counts.columns.tolist())
+
+    # Ensure 'Edition' column exists before sorting
+    if 'Edition' not in value_counts.columns:
+        raise ValueError("Column 'Edition' does not exist after renaming.")
+
+    # Sort by 'Edition'
+    value_counts.sort_values('Edition', ascending=True, inplace=True)
+    
+    return value_counts
 
 
 
